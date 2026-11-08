@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Passaporte do Produto Usado</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+<div class="container">
+<h1>Passaporte do Produto Usado</h1>
+<div class="card">
+<h2>Produto</h2>
+<input id="produto" placeholder="Nome do Produto">
+<input id="marca" placeholder="Marca">
+<input id="modelo" placeholder="Modelo">
+<input id="serie" placeholder="Número de Série">
+<input id="categoria" placeholder="Categoria">
+<input id="estado" placeholder="Estado de Conservação">
+<input id="valor" placeholder="Valor de Venda">
+<textarea id="obs" placeholder="Observações"></textarea>
+<label>Fotos</label>
+<input id="fotos" type="file" multiple accept="image/*">
+</div>
+<div class="card">
+<h2>Comprador</h2>
+<input id="cliente" placeholder="Nome">
+<input id="cpf" placeholder="CPF">
+<input id="telefone" placeholder="Telefone">
+<input id="email" placeholder="E-mail">
+</div>
+<button onclick="gerarPassaporte()">Gerar Passaporte</button>
+<button onclick="exportarBackup()">Backup JSON</button>
+<button onclick="document.getElementById('importFile').click()">Importar JSON</button>
+<input type="file" id="importFile" hidden accept=".json" onchange="importarBackup(event)">
+<div id="preview"></div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
