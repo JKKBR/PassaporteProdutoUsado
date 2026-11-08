@@ -1,43 +1,95 @@
-<!DOCTYPE html>
-<html lang="pt-br">
+<!doctype html>
+<html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Passaporte do Produto Usado</title>
-<link rel="stylesheet" href="style.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Passaporte do Produto Usado</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script defer src="app.js"></script>
 </head>
 <body>
-<div class="container">
-<h1>Passaporte do Produto Usado</h1>
-<div class="card">
-<h2>Produto</h2>
-<input id="produto" placeholder="Nome do Produto">
-<input id="marca" placeholder="Marca">
-<input id="modelo" placeholder="Modelo">
-<input id="serie" placeholder="Número de Série">
-<input id="categoria" placeholder="Categoria">
-<input id="estado" placeholder="Estado de Conservação">
-<input id="valor" placeholder="Valor de Venda">
-<textarea id="obs" placeholder="Observações"></textarea>
-<label>Fotos</label>
-<input id="fotos" type="file" multiple accept="image/*">
-</div>
-<div class="card">
-<h2>Comprador</h2>
-<input id="cliente" placeholder="Nome">
-<input id="cpf" placeholder="CPF">
-<input id="telefone" placeholder="Telefone">
-<input id="email" placeholder="E-mail">
-</div>
-<button onclick="gerarPassaporte()">Gerar Passaporte</button>
-<button onclick="exportarBackup()">Backup JSON</button>
-<button onclick="document.getElementById('importFile').click()">Importar JSON</button>
-<input type="file" id="importFile" hidden accept=".json" onchange="importarBackup(event)">
-<div id="preview"></div>
-</div>
-<script src="app.js"></script>
+<header class="topbar">
+  <div class="brand"><span class="brand-mark">PPU</span><div><strong>Passaporte do Produto Usado</strong><small>Certificado de Procedência e Registro de Comercialização</small></div></div>
+  <button id="themeBtn" class="icon-btn" title="Alternar tema">◐</button>
+</header>
+
+<main class="app-shell">
+  <nav class="tabs" aria-label="Navegação principal">
+    <button class="tab active" data-view="editor">Novo certificado</button>
+    <button class="tab" data-view="history">Histórico</button>
+    <button class="tab" data-view="settings">Empresa</button>
+  </nav>
+
+  <section id="editorView" class="view active">
+    <div class="editor-grid">
+      <form id="certificateForm" class="panel form-panel" autocomplete="off">
+        <div class="panel-heading"><div><span class="eyebrow">Cadastro</span><h1>Novo passaporte</h1></div><button type="button" id="clearBtn" class="button ghost">Limpar</button></div>
+        <input type="hidden" id="editingId">
+        <fieldset><legend>Produto</legend>
+          <div class="form-grid">
+            <label class="span-2">Nome do produto<input id="produto" required maxlength="100" placeholder="Ex.: Notebook Dell Latitude 5420"></label>
+            <label>Marca<input id="marca" maxlength="60"></label><label>Modelo<input id="modelo" maxlength="60"></label>
+            <label>Número de série<input id="serie" maxlength="80"></label><label>Categoria<input id="categoria" maxlength="60"></label>
+            <label>Conservação<select id="estado"><option>Excelente</option><option selected>Bom</option><option>Regular</option><option>Restaurado</option><option>Com marcas de uso</option></select></label>
+            <label>Valor da venda<input id="valor" inputmode="decimal" placeholder="0,00"></label>
+            <label class="span-2">Observações<textarea id="obs" rows="3" maxlength="500" placeholder="Características, acessórios, marcas de uso ou informações relevantes"></textarea></label>
+          </div>
+        </fieldset>
+        <fieldset><legend>Comprador</legend>
+          <div class="form-grid">
+            <label class="span-2">Nome completo<input id="cliente" required maxlength="100"></label>
+            <label>CPF/CNPJ<input id="documento" maxlength="20"></label><label>Telefone<input id="telefone" maxlength="25"></label>
+            <label class="span-2">E-mail<input id="email" type="email" maxlength="100"></label>
+          </div>
+        </fieldset>
+        <fieldset><legend>Registro fotográfico</legend>
+          <label class="dropzone" id="dropzone"><input id="fotos" type="file" accept="image/*" multiple hidden><span class="drop-icon">＋</span><strong>Selecionar ou arrastar fotos</strong><small>Até 4 imagens. Elas serão redimensionadas para economizar espaço.</small></label>
+          <div id="photoList" class="photo-list"></div>
+        </fieldset>
+        <div class="form-actions"><button type="button" id="previewBtn" class="button secondary">Atualizar prévia</button><button type="submit" class="button primary">Salvar e gerar PDF</button></div>
+        <p class="privacy-note">Os dados ficam no armazenamento local deste navegador. Faça backups regularmente.</p>
+      </form>
+
+      <aside class="preview-column">
+        <div class="preview-toolbar"><span>Prévia A4</span><button id="pdfBtn" class="button compact">Baixar PDF</button></div>
+        <div class="paper-wrap">
+          <article id="certificate" class="certificate">
+            <div class="ornament corner tl">◆</div><div class="ornament corner tr">◆</div><div class="ornament corner bl">◆</div><div class="ornament corner br">◆</div>
+            <header class="cert-header"><img id="certLogo" class="cert-logo hidden" alt="Logo"><div><div class="cert-kicker">CERTIFICADO DE PROCEDÊNCIA</div><h2>Passaporte do Produto Usado</h2><p>Registro de origem e comercialização</p></div><div class="seal"><span>PRODUTO</span><b>REGISTRADO</b><small>PROCEDÊNCIA</small></div></header>
+            <div class="registry"><span>NÚMERO DO REGISTRO</span><strong id="certNumero">PPU-000001</strong><span>EMISSÃO</span><strong id="certData">--/--/----</strong></div>
+            <section class="cert-intro"><p>Certifica-se, para fins de registro comercial, que o produto abaixo identificado foi declarado e registrado com as características apresentadas neste documento.</p></section>
+            <section class="product-block"><span class="section-label">PRODUTO CERTIFICADO</span><h3 id="certProduto">Nome do produto</h3><div class="details-grid"><div><span>Marca</span><b id="certMarca">—</b></div><div><span>Modelo</span><b id="certModelo">—</b></div><div><span>Número de série</span><b id="certSerie">—</b></div><div><span>Categoria</span><b id="certCategoria">—</b></div><div><span>Conservação</span><b id="certEstado">—</b></div><div><span>Valor declarado</span><b id="certValor">—</b></div></div></section>
+            <section class="photo-section"><span class="section-label">REGISTRO FOTOGRÁFICO</span><div id="certPhotos" class="cert-photos"><div class="photo-placeholder">Nenhuma foto selecionada</div></div></section>
+            <section class="owner-block"><span class="section-label">COMPRADOR REGISTRADO</span><div class="owner-row"><div><h4 id="certCliente">Nome do comprador</h4><p id="certDocumento">Documento: —</p></div><div class="cert-note"><span>OBSERVAÇÕES</span><p id="certObs">Nenhuma observação registrada.</p></div></div></section>
+            <footer class="cert-footer"><div class="signature"><img id="certSignature" class="signature-img hidden" alt="Assinatura"><div class="signature-line"></div><strong id="certEmpresa">Empresa emitente</strong><span id="certEmpresaDoc">Documento da empresa</span></div><div class="qr-box"><div id="qrcode"></div><small>Leia para conferir os dados principais</small></div><div class="cert-legal"><strong>Documento declaratório</strong><p>Este certificado não substitui nota fiscal, documento fiscal, garantia legal ou comprovante exigido pela legislação aplicável.</p></div></footer>
+          </article>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section id="historyView" class="view">
+    <div class="panel"><div class="panel-heading"><div><span class="eyebrow">Arquivo local</span><h1>Histórico de certificados</h1></div><div class="toolbar"><button id="exportJsonBtn" class="button secondary">Backup JSON</button><label class="button ghost file-button">Importar JSON<input id="importJson" type="file" accept="application/json,.json" hidden></label><button id="exportCsvBtn" class="button ghost">Exportar CSV</button></div></div>
+      <div class="search-row"><input id="searchInput" type="search" placeholder="Pesquisar por número, produto, cliente ou série"><span id="historyCount">0 registros</span></div>
+      <div id="historyList" class="history-list"></div>
+    </div>
+  </section>
+
+  <section id="settingsView" class="view">
+    <form id="companyForm" class="panel settings-panel"><div class="panel-heading"><div><span class="eyebrow">Personalização</span><h1>Dados da empresa</h1></div></div>
+      <div class="form-grid"><label class="span-2">Nome da empresa<input id="empresaNome" required></label><label>CPF/CNPJ<input id="empresaDoc"></label><label>Telefone<input id="empresaTelefone"></label><label class="span-2">Endereço<input id="empresaEndereco"></label>
+      <label>Logo<input id="logoInput" type="file" accept="image/*"></label><label>Assinatura ou carimbo<input id="signatureInput" type="file" accept="image/*"></label></div>
+      <div class="asset-preview"><div><span>Logo</span><img id="logoPreview" alt="Prévia do logo"></div><div><span>Assinatura</span><img id="signaturePreview" alt="Prévia da assinatura"></div></div>
+      <div class="form-actions"><button type="submit" class="button primary">Salvar configurações</button></div>
+    </form>
+  </section>
+</main>
+
+<div id="toast" class="toast" role="status"></div>
+<div id="confirmModal" class="modal hidden" role="dialog" aria-modal="true"><div class="modal-card"><h3 id="modalTitle">Confirmar</h3><p id="modalText"></p><div><button id="modalCancel" class="button ghost">Cancelar</button><button id="modalConfirm" class="button danger">Confirmar</button></div></div></div>
 </body>
 </html>
